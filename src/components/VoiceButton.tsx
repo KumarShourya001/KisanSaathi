@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Microphone, MicrophoneSlash } from "@phosphor-icons/react";
 import type { SymptomCategory } from "../../shared/types";
-import { categoryFromSpeech, severityFromSpeech, webSpeech } from "../lib/voice";
+import { categoryFromSpeech, severityFromSpeech, webSpeech, sarvamSpeech } from "../lib/voice";
 import { SPEECH_LOCALES, type T } from "../lib/i18n";
 import type { Lang } from "../lib/session";
 
@@ -25,6 +25,7 @@ export function VoiceButton({
   onCategory: (c: SymptomCategory) => void;
   onSeverity: (s: 1 | 2 | 3) => void;
 }) {
+  const recogniser = sarvamSpeech.supported ? sarvamSpeech : webSpeech;
   const [listening, setListening] = useState(false);
   const [heard, setHeard] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export function VoiceButton({
 
   useEffect(() => () => stopRef.current?.(), []);
 
-  if (!webSpeech.supported) {
+  if (!recogniser.supported) {
     return (
       <div className="flex items-center gap-3 rounded-card border border-rule bg-sunk px-4 py-3 text-muted">
         <MicrophoneSlash size={22} />
@@ -52,7 +53,7 @@ export function VoiceButton({
     setHeard("");
     setListening(true);
 
-    stopRef.current = webSpeech.listen(SPEECH_LOCALES[lang], {
+    stopRef.current = recogniser.listen(SPEECH_LOCALES[lang], {
       onResult: (transcript, isFinal) => {
         setHeard(transcript);
         if (!isFinal) return;
