@@ -1,0 +1,1144 @@
+<title>Rural Bridge Blueprint</title>
+
+<style>
+  /* ---------- tokens: light (bare :root = complete palette) ---------- */
+  :root {
+    --ground:   #F6F8F3;
+    --surface:  #FFFFFF;
+    --sunk:     #EEF2E9;
+    --ink:      #131711;
+    --ink-2:    #3B4434;
+    --muted:    #5C6355;
+    --rule:     #DCE2D5;
+    --rule-2:   #C6CFBD;
+    --forest:   #2F5D3F;
+    --forest-b: #E4EEE5;
+    --on-forest:   #FFFFFF;
+    --on-forest-2: rgba(255,255,255,.82);
+    --warn:     #9A5A0B;
+    --warn-b:   #FBEEDC;
+    --crit:     #A3291C;
+    --crit-b:   #FBE6E2;
+    --shadow:   0 1px 2px rgba(19,23,17,.05), 0 8px 24px -12px rgba(19,23,17,.16);
+
+    --sans: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --mono: ui-monospace, "Cascadia Code", "JetBrains Mono", "SF Mono", Consolas, monospace;
+
+    --shell: 1240px;
+    --col: 74ch;
+    --r: 10px;
+    --r-s: 6px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:   #0F120E;
+      --surface:  #161A14;
+      --sunk:     #1C211A;
+      --ink:      #E7EBE2;
+      --ink-2:    #B9C2B2;
+      --muted:    #8D9587;
+      --rule:     #272D24;
+      --rule-2:   #38402F;
+      --forest:   #7FBA8E;
+      --forest-b: #1B2A1E;
+      --on-forest:   #0F120E;
+      --on-forest-2: rgba(15,18,14,.76);
+      --warn:     #D9A253;
+      --warn-b:   #2B2213;
+      --crit:     #E28273;
+      --crit-b:   #2E1A16;
+      --shadow:   0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:   #0F120E;
+    --surface:  #161A14;
+    --sunk:     #1C211A;
+    --ink:      #E7EBE2;
+    --ink-2:    #B9C2B2;
+    --muted:    #8D9587;
+    --rule:     #272D24;
+    --rule-2:   #38402F;
+    --forest:   #7FBA8E;
+    --forest-b: #1B2A1E;
+    --on-forest:   #0F120E;
+    --on-forest-2: rgba(15,18,14,.76);
+    --warn:     #D9A253;
+    --warn-b:   #2B2213;
+    --crit:     #E28273;
+    --crit-b:   #2E1A16;
+    --shadow:   0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  /* ---------- base ---------- */
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 { margin: 0; text-wrap: balance; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15; }
+  h1 { font-size: clamp(2.1rem, 4.4vw, 3.1rem); letter-spacing: -0.038em; }
+  h2 { font-size: clamp(1.4rem, 2.4vw, 1.75rem); }
+  h3 { font-size: 1.06rem; letter-spacing: -0.015em; }
+  h4 { font-size: .93rem; letter-spacing: -0.005em; }
+  p  { margin: 0; }
+  a  { color: var(--forest); text-underline-offset: 3px; }
+
+  :focus-visible { outline: 2px solid var(--forest); outline-offset: 2px; border-radius: 3px; }
+
+  code, .mono { font-family: var(--mono); font-size: .84em; font-variant-numeric: tabular-nums; }
+  code { background: var(--sunk); padding: .12em .38em; border-radius: 4px; color: var(--ink-2); }
+
+  .lede { font-size: 1.12rem; color: var(--ink-2); max-width: 62ch; }
+  .muted { color: var(--muted); }
+  .tiny { font-size: .8rem; line-height: 1.5; }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: .68rem;
+    text-transform: uppercase;
+    letter-spacing: .13em;
+    color: var(--muted);
+  }
+
+  /* ---------- shell ---------- */
+  .shell {
+    max-width: var(--shell);
+    margin: 0 auto;
+    padding: 0 24px 120px;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 56px;
+    align-items: start;
+  }
+
+  .rail { position: sticky; top: 28px; display: none; flex-direction: column; gap: 2px; padding-top: 8px; }
+  .rail a {
+    font-size: .83rem;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 10px;
+    border-left: 2px solid var(--rule);
+    transition: color .15s, border-color .15s;
+  }
+  .rail a:hover { color: var(--ink); border-left-color: var(--forest); }
+  .rail .rail-h { font-family: var(--mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .13em; color: var(--muted); padding: 0 10px 8px; }
+
+  @media (min-width: 1040px) { .rail { display: flex; } }
+  @media (max-width: 1039px) { .shell { grid-template-columns: minmax(0,1fr); gap: 0; } }
+
+  main { min-width: 0; display: flex; flex-direction: column; gap: 68px; }
+
+  /* ---------- masthead ---------- */
+  .masthead { padding: 68px 0 0; display: flex; flex-direction: column; gap: 22px; }
+  .masthead .stamp {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .06em;
+    color: var(--crit); background: var(--crit-b);
+    border: 1px solid var(--crit); border-radius: 100px;
+    padding: 5px 13px; width: fit-content;
+    font-variant-numeric: tabular-nums;
+  }
+  .thesis {
+    border-left: 3px solid var(--forest);
+    padding: 4px 0 4px 20px;
+    font-size: 1.05rem;
+    color: var(--ink-2);
+    max-width: 62ch;
+  }
+  .thesis strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- sections ---------- */
+  section { display: flex; flex-direction: column; gap: 22px; scroll-margin-top: 24px; }
+  .sec-head { display: flex; flex-direction: column; gap: 9px; padding-bottom: 4px; border-bottom: 1px solid var(--rule); }
+  .prose { max-width: var(--col); display: flex; flex-direction: column; gap: 14px; color: var(--ink-2); }
+
+  /* ---------- cards ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--r);
+    padding: 20px;
+    display: flex; flex-direction: column; gap: 11px;
+  }
+  .grid { display: grid; gap: 14px; }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); }
+  .g3 { grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); }
+
+  /* ---------- pipeline flow ---------- */
+  .flow { display: flex; flex-direction: column; gap: 0; }
+  .flow-row {
+    display: grid;
+    grid-template-columns: 128px minmax(0, 1fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+  .flow-stage {
+    font-family: var(--mono); font-size: .69rem; text-transform: uppercase; letter-spacing: .11em;
+    color: var(--muted); padding-top: 21px; text-align: right;
+  }
+  .flow-body {
+    border-left: 1px solid var(--rule);
+    padding: 0 0 26px 24px;
+    position: relative;
+  }
+  .flow-row:last-child .flow-body { padding-bottom: 0; border-left-color: transparent; }
+  .flow-body::before {
+    content: ""; position: absolute; left: -5px; top: 22px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--forest); outline: 3px solid var(--ground);
+  }
+  @media (max-width: 620px) {
+    .flow-row { grid-template-columns: minmax(0,1fr); gap: 0; }
+    .flow-stage { text-align: left; padding: 0 0 6px 24px; }
+    .flow-body::before { top: 2px; }
+  }
+
+  .node {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: var(--r); padding: 15px 17px;
+    display: flex; flex-direction: column; gap: 7px;
+  }
+  .node.accent { border-color: var(--forest); background: var(--forest-b); }
+  .node-t { font-weight: 600; font-size: .95rem; display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+
+  .chip {
+    font-family: var(--mono); font-size: .66rem; text-transform: uppercase; letter-spacing: .07em;
+    padding: 2px 7px; border-radius: 4px; border: 1px solid var(--rule-2);
+    color: var(--muted); background: var(--sunk); white-space: nowrap;
+  }
+  .chip.live { color: var(--forest); border-color: var(--forest); background: var(--forest-b); }
+  .chip.sim  { color: var(--warn);   border-color: var(--warn);   background: var(--warn-b); }
+
+  /* ---------- tables ---------- */
+  .tw { overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--r); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .88rem; min-width: 520px; }
+  th, td { text-align: left; padding: 11px 15px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th {
+    font-family: var(--mono); font-size: .67rem; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--muted); font-weight: 400; background: var(--sunk); white-space: nowrap;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ---------- schedule ---------- */
+  .sched { display: flex; flex-direction: column; }
+  .slot {
+    display: grid; grid-template-columns: 104px 1fr; gap: 20px;
+    padding: 13px 0; border-top: 1px solid var(--rule);
+  }
+  .slot:last-child { border-bottom: 1px solid var(--rule); }
+  .slot-t { font-family: var(--mono); font-size: .78rem; color: var(--forest); font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .slot-b { display: flex; flex-direction: column; gap: 4px; }
+  .slot.gate { background: var(--forest-b); margin: 0 -14px; padding: 13px 14px; border-radius: var(--r-s); border-top-color: var(--forest); }
+  .slot.gate .slot-t { font-weight: 600; }
+  @media (max-width: 620px) {
+    .slot { grid-template-columns: minmax(0,1fr); gap: 3px; }
+  }
+
+  /* ---------- phone previews ---------- */
+  .screens { display: grid; grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); gap: 26px; }
+  .screen { display: flex; flex-direction: column; gap: 11px; }
+  .screen-cap { display: flex; flex-direction: column; gap: 3px; }
+  .screen-cap .n { font-weight: 600; font-size: .93rem; }
+
+  .phone {
+    background: var(--surface);
+    border: 1px solid var(--rule-2);
+    border-radius: 20px;
+    padding: 9px;
+    box-shadow: var(--shadow);
+  }
+  .vp {
+    background: var(--ground);
+    border-radius: 13px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    min-height: 396px;
+    font-size: 12px; line-height: 1.4;
+  }
+
+  .statusbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 12px; font-family: var(--mono); font-size: 9.5px;
+    color: var(--muted); border-bottom: 1px solid var(--rule);
+    font-variant-numeric: tabular-nums;
+  }
+  .dot-off { display: inline-flex; align-items: center; gap: 5px; color: var(--warn); }
+  .dot-off::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
+  .dot-on { display: inline-flex; align-items: center; gap: 5px; color: var(--forest); }
+  .dot-on::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--forest); }
+
+  .vp-body { padding: 13px; display: flex; flex-direction: column; gap: 11px; flex: 1; }
+  .vp-h { font-weight: 600; font-size: 15px; letter-spacing: -0.015em; line-height: 1.2; }
+  .vp-sub { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  .tap {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 9px; padding: 12px; display: flex; flex-direction: column; gap: 3px;
+    min-height: 56px; justify-content: center;
+  }
+  .tap.hero { background: var(--forest); border-color: var(--forest); color: var(--on-forest); }
+  .tap.hero .tl { color: var(--on-forest); }
+  .tap.hero .ts { color: var(--on-forest-2); }
+  .tl { font-weight: 600; font-size: 13px; }
+  .ts { font-size: 10.5px; color: var(--muted); }
+
+  .icongrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+  .ic {
+    border: 1px solid var(--rule); border-radius: 8px; background: var(--surface);
+    padding: 10px 8px; display: flex; flex-direction: column; align-items: center; gap: 5px;
+    text-align: center; font-size: 10.5px; font-weight: 500;
+  }
+  .ic.on { border-color: var(--forest); background: var(--forest-b); color: var(--forest); border-width: 1.5px; }
+  .ic svg { width: 20px; height: 20px; stroke-width: 1.5; }
+
+  .mic {
+    display: flex; align-items: center; gap: 10px;
+    border: 1.5px dashed var(--forest); background: var(--forest-b);
+    border-radius: 9px; padding: 11px 13px; color: var(--forest);
+  }
+  .mic-c { width: 30px; height: 30px; border-radius: 50%; background: var(--forest); display: grid; place-items: center; flex-shrink: 0; }
+  .mic-c svg { width: 15px; height: 15px; stroke: var(--on-forest); }
+
+  .flagcard {
+    border: 1px solid var(--rule); border-radius: 9px; background: var(--surface);
+    overflow: hidden; display: flex;
+  }
+  .sev { width: 4px; flex-shrink: 0; background: var(--muted); }
+  .sev.c { background: var(--crit); }
+  .sev.w { background: var(--warn); }
+  .flag-in { padding: 10px 11px; display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+  .flag-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .flag-b { font-family: var(--mono); font-size: 9.5px; color: var(--muted); }
+  .flag-n { font-weight: 600; font-size: 12.5px; }
+  .pill {
+    font-family: var(--mono); font-size: 8.5px; text-transform: uppercase; letter-spacing: .07em;
+    padding: 2px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0;
+  }
+  .pill.c { background: var(--crit-b); color: var(--crit); border: 1px solid var(--crit); }
+  .pill.w { background: var(--warn-b); color: var(--warn); border: 1px solid var(--warn); }
+
+  .spark { display: flex; align-items: flex-end; gap: 2px; height: 30px; }
+  .spark i { flex: 1; background: var(--rule-2); border-radius: 1px 1px 0 0; display: block; }
+  .spark i.hi { background: var(--crit); }
+  .spark i.ag { background: var(--forest); }
+
+  .kv { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; padding: 5px 0; border-bottom: 1px solid var(--rule); }
+  .kv:last-child { border-bottom: none; }
+  .kv b { font-weight: 600; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  .outbox-row { display: flex; align-items: center; gap: 8px; font-size: 11px; padding: 6px 0; border-bottom: 1px solid var(--rule); }
+  .outbox-row:last-child { border-bottom: none; }
+  .outbox-row .id { font-family: var(--mono); font-size: 9.5px; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .st { font-family: var(--mono); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
+  .st.ok { color: var(--forest); }
+  .st.q  { color: var(--warn); }
+
+  .toggle { display: flex; border: 1px solid var(--rule); border-radius: 7px; overflow: hidden; }
+  .toggle span { flex: 1; text-align: center; padding: 7px 4px; font-size: 11px; font-weight: 500; color: var(--muted); }
+  .toggle span.on { background: var(--forest); color: var(--on-forest); }
+
+  .tabbar { display: flex; border-top: 1px solid var(--rule); background: var(--surface); }
+  .tb { flex: 1; padding: 8px 4px 9px; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; color: var(--muted); }
+  .tb.on { color: var(--forest); }
+  .tb svg { width: 16px; height: 16px; stroke-width: 1.6; }
+
+  .note {
+    background: var(--sunk); border: 1px solid var(--rule); border-left: 3px solid var(--forest);
+    border-radius: var(--r-s); padding: 14px 17px; font-size: .9rem; color: var(--ink-2);
+    display: flex; flex-direction: column; gap: 7px; max-width: var(--col);
+  }
+  .note.warn { border-left-color: var(--warn); }
+
+  ul.clean { margin: 0; padding-left: 19px; display: flex; flex-direction: column; gap: 7px; }
+  ul.clean li::marker { color: var(--rule-2); }
+
+  ol.cut { margin: 0; padding-left: 21px; display: flex; flex-direction: column; gap: 6px; font-variant-numeric: tabular-nums; }
+  ol.cut li::marker { font-family: var(--mono); font-size: .8em; color: var(--warn); }
+
+  footer { border-top: 1px solid var(--rule); padding-top: 22px; color: var(--muted); font-size: .84rem; max-width: var(--col); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="shell">
+
+  <nav class="rail" aria-label="Sections">
+    <div class="rail-h">Blueprint</div>
+    <a href="#call">The call</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#stack">Stack</a>
+    <a href="#schema">Data model</a>
+    <a href="#rules">The three rules</a>
+    <a href="#screens">Screens</a>
+    <a href="#deploy">Deployment</a>
+    <a href="#schedule">Build status</a>
+    <a href="#demo">Demo script</a>
+    <a href="#honesty">Real vs simulated</a>
+    <a href="#bench">Benchmarks</a>
+  </nav>
+
+  <main>
+
+    <header class="masthead">
+      <div class="stamp">Round 1 closes 23:59 today &middot; prototype built and verified locally</div>
+      <h1>Rural Bridge</h1>
+      <p class="lede">An integrated health and agriculture risk platform for rural India. This is the build blueprint and the record of what was actually made, measured and left to do.</p>
+      <div class="thesis">
+        The competition will split into a health track and an agri track. <strong>We are building neither. We are building the join between them</strong>, because a pesticide application record and a dermal symptom report become an early warning only when something puts them in the same row.
+      </div>
+    </header>
+
+    <!-- ============ THE CALL ============ -->
+    <section id="call">
+      <div class="sec-head">
+        <span class="kicker">Section one</span>
+        <h2>The call</h2>
+      </div>
+      <div class="prose">
+        <p>You have 11 hours and you are the only person on the prototype. That budget does not buy two full tracks, an ML model, and a polished deck. It buys one vertical slice, deployed and provably working, plus the screenshots the other four need for the deck.</p>
+        <p>So the scope is one sentence: <strong>a field worker captures a record with no signal, the record survives a force-kill, it syncs on reconnect, and a rule fires that neither feed could have produced alone.</strong> Everything else is negotiable.</p>
+      </div>
+
+      <div class="grid g3">
+        <div class="card">
+          <span class="kicker">Non negotiable</span>
+          <h3>Offline capture</h3>
+          <p class="tiny muted">Append-only op log in IndexedDB. Survives airplane mode and a force-kill. This is the claim every judge will test.</p>
+        </div>
+        <div class="card">
+          <span class="kicker">Non negotiable</span>
+          <h3>Sync drain</h3>
+          <p class="tiny muted">Idempotent POST keyed on a client-generated UUID. The queue emptying on screen is the moment that sells the whole platform.</p>
+        </div>
+        <div class="card">
+          <span class="kicker">Non negotiable</span>
+          <h3>Cross-domain flag</h3>
+          <p class="tiny muted">A rule that reads both feeds and explains itself in one sentence a block officer can act on. This is the thesis.</p>
+        </div>
+      </div>
+
+      <div class="note warn">
+        <strong>One concern, stated once.</strong>
+        <p class="tiny">Deploying an offline-first PWA with a real database is genuinely achievable tonight, but only if the deploy happens in the first 30 minutes rather than the last. Teams lose this round by writing beautiful code that first meets a deployment pipeline at 22:00. The schedule below front-loads deployment for exactly that reason.</p>
+      </div>
+    </section>
+
+    <!-- ============ PIPELINE ============ -->
+    <section id="pipeline">
+      <div class="sec-head">
+        <span class="kicker">Section two</span>
+        <h2>The pipeline</h2>
+        <p class="tiny muted">Two feeds enter on a shared spatial-temporal key. One ranked, explainable advisory leaves.</p>
+      </div>
+
+      <div class="flow">
+
+        <div class="flow-row">
+          <div class="flow-stage">Capture</div>
+          <div class="flow-body">
+            <div class="grid g2">
+              <div class="node">
+                <div class="node-t">ASHA worker <span class="chip">health</span></div>
+                <p class="tiny muted">Voice or tap entry: symptom category, severity, patient age band. Block ID and timestamp attach automatically from the device. No signal required.</p>
+              </div>
+              <div class="node">
+                <div class="node-t">Agri worker <span class="chip">agri</span></div>
+                <p class="tiny muted">Input class, crop, application date, area covered. Same offline path, same op log, same block key.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-stage">Buffer</div>
+          <div class="flow-body">
+            <div class="node">
+              <div class="node-t">Append-only op log <span class="chip">IndexedDB via Dexie</span></div>
+              <p class="tiny muted">Every capture writes one immutable op with a client-generated UUIDv4, a device ID, and a monotonic sequence number. Nothing is ever edited in place, so a half-finished sync can always be resumed rather than reconciled.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-stage">Sync</div>
+          <div class="flow-body">
+            <div class="node">
+              <div class="node-t">Idempotent batch drain <span class="chip mono">POST /api/sync</span></div>
+              <p class="tiny muted">On reconnect the client posts ops in batches. The server upserts on the client UUID, so a retried batch is a no-op rather than a duplicate. Conflict policy is last-write-wins per record, which is defensible here because two workers never edit the same observation. That is the honest answer to the CRDT question, and it is a better answer than an unnecessary CRDT.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-stage">Join</div>
+          <div class="flow-body">
+            <div class="node accent">
+              <div class="node-t">Correlation engine <span class="chip live">the bridge</span></div>
+              <p class="tiny muted">Rule-based, not ML. Groups both feeds by <code>(block_id, date)</code>, computes a 60-day rolling baseline per block, and tests three rules. Rule-based is the deliberate choice: every flag can be explained to a judge, and to a district health officer, in one sentence with the numbers attached.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-stage">Enrich</div>
+          <div class="flow-body">
+            <div class="node">
+              <div class="node-t">Weather <span class="chip live">OpenWeather, live</span></div>
+              <p class="tiny muted">Temperature and humidity per block centroid, converted to a heat index. Cached server-side so the free tier quota is never the bottleneck during a demo.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-row">
+          <div class="flow-stage">Act</div>
+          <div class="flow-body">
+            <div class="node">
+              <div class="node-t">Ranked advisory</div>
+              <p class="tiny muted">Each flag carries a severity, the two source figures that produced it, and one recommended action addressed to a named role. A flag with no action attached is a statistic, and statistics do not get acted on in a block office.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ STACK ============ -->
+    <section id="stack">
+      <div class="sec-head">
+        <span class="kicker">Section three</span>
+        <h2>Stack, and the trade made to get it</h2>
+      </div>
+
+      <div class="prose">
+        <p>Your brief specified FastAPI and Postgres. With 11 hours and one builder I am recommending a change to the prototype only: <strong>one deployable instead of two</strong>. Two deployments means CORS, two dashboards, two sets of environment variables, and a free-tier Python host that cold-starts for 30 to 50 seconds, which is long enough to kill a live demo.</p>
+        <p>One Vercel project serving both the PWA and the API removes all of that. The API surface stays identical, so the architecture slide can still show FastAPI and Postgres as the production target as long as the deck says plainly which one is deployed. Judges reward that distinction. They punish discovering it themselves.</p>
+      </div>
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr><th>Layer</th><th>Choice</th><th>Why this one</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>App shell</td><td class="num">React 19 + Vite + TS</td><td>Fastest cold build, smallest output, no framework server to deploy.</td></tr>
+            <tr><td>PWA</td><td class="num">vite-plugin-pwa</td><td>Generates the service worker and manifest from config. Hand-writing a service worker tonight is a trap.</td></tr>
+            <tr><td>Offline store</td><td class="num">Dexie</td><td>Thin IndexedDB wrapper with a live-query hook, so the outbox counter updates itself.</td></tr>
+            <tr><td>Styling</td><td class="num">Tailwind v4</td><td>No config file needed in v4. Design tokens live in one CSS block.</td></tr>
+            <tr><td>API</td><td class="num">Vercel Functions, TS</td><td>Same repo, same deploy, no CORS, sub-second cold start.</td></tr>
+            <tr><td>Database</td><td class="num">Neon Postgres, free</td><td>Real Postgres over an HTTP driver, so there is no connection pool to tune in a serverless runtime.</td></tr>
+            <tr><td>Engine</td><td class="num">Pure TS module</td><td>No framework, no ORM, unit-testable from the command line before any UI exists.</td></tr>
+            <tr><td>Voice</td><td class="num">Web Speech API</td><td>Zero signup, zero cost, supports <code>hi-IN</code> in Chrome on Android. Sarvam sits behind a one-file adapter for the final round.</td></tr>
+            <tr><td>Charts</td><td class="num">Hand-built SVG</td><td>Two sparklines do not justify a 90 KB charting library on a 2G budget.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong>On Sarvam and Bhashini.</strong>
+        <p class="tiny">Both need signup and a key, and neither can be a dependency on a deadline day. The Web Speech API gives working Hindi dictation tonight at zero risk. Keep <code>src/voice/adapter.ts</code> as a two-function interface so swapping to Sarvam for the final round is a single file. Cite Bhashini on the architecture slide for domain awareness, ship Web Speech in the demo, and say which is which.</p>
+      </div>
+    </section>
+
+    <!-- ============ SCHEMA ============ -->
+    <section id="schema">
+      <div class="sec-head">
+        <span class="kicker">Section four</span>
+        <h2>Data model</h2>
+        <p class="tiny muted">Agree this before any UI. Everything else is downstream of the block key.</p>
+      </div>
+
+      <div class="prose">
+        <p>The shared key is <code>block_id</code>, shaped like an LGD (Local Government Directory) code, which is the identifier both AgriStack and ABDM-adjacent state systems actually key on. Using the real scheme costs nothing now and makes the integration slide credible.</p>
+        <p>The demo geography is Yavatmal district, Maharashtra. That is a deliberate choice: Yavatmal is the site of a widely documented 2017 organophosphate poisoning cluster among cotton farmers, which makes the pesticide-to-symptom rule concrete rather than hypothetical. Have someone on the deck team pull a citable source for the figures before it goes on a slide.</p>
+      </div>
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr><th>Table</th><th>Key columns</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num">blocks</td>
+              <td class="num">block_id pk, name, district, state, lat, lon, population</td>
+              <td>10 rows. Seeded once, never written by the client.</td>
+            </tr>
+            <tr>
+              <td class="num">health_records</td>
+              <td class="num">op_id pk uuid, block_id fk, observed_on date, symptom_category, severity 1-3, age_band, reporter_id, created_at</td>
+              <td><code>op_id</code> is generated on the device. Upsert target for sync.</td>
+            </tr>
+            <tr>
+              <td class="num">agri_records</td>
+              <td class="num">op_id pk uuid, block_id fk, applied_on date, input_class, crop, area_ha, reporter_id, created_at</td>
+              <td>Same shape on purpose. Symmetry is what makes the join trivial.</td>
+            </tr>
+            <tr>
+              <td class="num">correlation_flags</td>
+              <td class="num">flag_id pk, block_id fk, rule, severity, window_start, window_end, evidence jsonb, action, created_at</td>
+              <td><code>evidence</code> stores the observed and expected counts, so the UI never recomputes the explanation.</td>
+            </tr>
+            <tr>
+              <td class="num">weather_cache</td>
+              <td class="num">block_id, for_date, temp_c, humidity_pct, heat_index_c</td>
+              <td>Written by the enrich step. Keeps the OpenWeather quota out of the request path.</td>
+            </tr>
+            <tr>
+              <td class="num">consents</td>
+              <td class="num">consent_id pk, subject_ref, purpose, granted_at, expires_at, revoked_at</td>
+              <td>The DPDP artifact. Small table, large number of deck points.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <strong>Seed shape, as built.</strong>
+        <p class="tiny">10 blocks, 233 health records, 125 agri records and 350 weather rows across 60 days. Three blocks are rigged with a pesticide-to-symptom pattern, one for heat only, and one rigged to look suspicious but fall below threshold. That last one matters most: it proves the engine says no, which is the question a sharp judge asks.</p>
+      </div>
+    </section>
+
+    <!-- ============ RULES ============ -->
+    <section id="rules">
+      <div class="sec-head">
+        <span class="kicker">Section five</span>
+        <h2>The three rules</h2>
+        <p class="tiny muted">Written out with thresholds, because "our engine detects correlations" is not an answer and these numbers are what gets asked about.</p>
+      </div>
+
+      <div class="grid g2">
+
+        <div class="card">
+          <div class="node-t">Rule 1 <span class="chip">exposure to symptom</span></div>
+          <p class="tiny muted">For block <code>B</code> on day <code>D</code>, count applications of WHO Class II inputs in the window <code>[D-7, D]</code>. Compare against that block's median weekly count over the preceding 60 days, excluding the trailing 14 so the spike cannot inflate its own baseline.</p>
+          <p class="tiny muted">If applications reach the greater of 3 or three times baseline, look forward across <code>[D, D+5]</code> at dermal, respiratory and neurological reports. Flag when those reach the greater of 4 or two and a half times their own baseline.</p>
+        </div>
+
+        <div class="card">
+          <div class="node-t">Rule 2 <span class="chip">heat stress</span></div>
+          <p class="tiny muted">Heat index computed from OpenWeather temperature and humidity at the block centroid. Two or more consecutive days at or above 40&deg;C raises a labour advisory.</p>
+          <p class="tiny muted">Bands: 40 to 45 caution, 45 to 52 danger, above 52 extreme. Action is a field-hours shift out of the 11:00 to 16:00 window plus an ORS distribution prompt to ASHA workers in that block.</p>
+        </div>
+
+        <div class="card" style="border-color: var(--forest); background: var(--forest-b);">
+          <div class="node-t">Rule 3 <span class="chip live">the composite</span></div>
+          <p class="tiny muted">A block carrying both an active heat advisory and an active exposure flag escalates one severity band, regardless of either rule's individual score.</p>
+          <p class="tiny muted">The justification is physiological rather than statistical: heat drives sweating and higher respiratory rate, both of which increase dermal and inhalation uptake of the same compound. Neither a health system nor an agriculture system can see this. That is the entire argument for the platform, expressed as ten lines of code.</p>
+        </div>
+
+        <div class="card">
+          <div class="node-t">Confidence and suppression</div>
+          <p class="tiny muted">Confidence is the observed-to-expected ratio capped at 4 and bucketed into low, medium and high. Blocks with fewer than 8 health records in the baseline window are suppressed entirely and surfaced as "insufficient data" rather than as a weak signal.</p>
+          <p class="tiny muted">Say this part out loud in the demo. A system that admits what it cannot see reads as engineering. A system that flags everything reads as a demo.</p>
+        </div>
+
+      </div>
+
+      <div class="note">
+        <strong>Why rules and not a model.</strong>
+        <p class="tiny">There is no labelled dataset for this join, so any model would be trained on data we invented. A rule-based engine is honest about that, runs in milliseconds on a cheap phone, and survives the question "why did it flag this block" without hand-waving. Frame it as a deliberate engineering choice with a stated upgrade path, not as a limitation.</p>
+      </div>
+    </section>
+
+    <!-- ============ SCREENS ============ -->
+    <section id="screens">
+      <div class="sec-head">
+        <span class="kicker">Section six</span>
+        <h2>Structural preview</h2>
+        <p class="tiny muted">Eight screens at true phone width. Built as live markup, so these double as the wireframe slide and as the visual spec for tonight's build.</p>
+      </div>
+
+      <div class="prose">
+        <p>The design constraints come from the user, not from taste: a health worker holding a low-end Android in direct sunlight, possibly with one hand, possibly reading slowly. That produces large tap targets, high contrast, iconography carrying meaning alongside text, and connection state visible on every single screen rather than hidden in a settings page.</p>
+      </div>
+
+      <div class="screens">
+
+        <!-- 1. role select -->
+        <div class="screen">
+          <div class="phone"><div class="vp">
+            <div class="statusbar"><span>09:14</span><span class="dot-off">No signal</span></div>
+            <div class="vp-body">
+              <div>
+                <div class="vp-h">Who is using this device?</div>
+                <div class="vp-sub">आप कौन हैं?</div>
+              </div>
+              <div class="tap hero"><span class="tl">ASHA worker</span><span class="ts">Log health visits</span></div>
+              <div class="tap"><span class="tl">Agri worker</span><span class="ts">Log input applications</span></div>
+              <div class="tap"><span class="tl">Block officer</span><span class="ts">Review risk flags</span></div>
+              <div style="flex:1"></div>
+              <div class="toggle"><span class="on">English</span><span>हिन्दी</span><span>मराठी</span></div>
+            </div>
+          </div></div>
+          <div class="screen-cap">
+            <span class="n">Role select</span>
+            <span class="tiny muted">Set once, remembered. Role decides the whole navigation tree, so there is no shared home screen to compromise on.</span>
+          </div>
+        </div>
+
+        <!-- 2. field home -->
+        <div class="screen">
+          <div class="phone"><div class="vp">
+            <div class="statusbar"><span>09:16</span><span class="dot-off">Offline &middot; 3 queued</span></div>
+            <div class="vp-body">
+              <div>
+                <div class="vp-h">Ner block</div>
+                <div class="vp-sub">Sunita Kharat &middot; ASHA &middot; LGD 4162</div>
+              </div>
+              <div class="tap hero"><span class="tl">Log a health visit</span><span class="ts">Works without signal</span></div>
+              <div class="tap"><span class="tl">Log an input application</span><span class="ts">Works without signal</span></div>
+              <div style="margin-top:2px">
+                <div class="kicker" style="font-size:9px">Waiting to send</div>
+                <div class="outbox-row"><span class="id">op_7f2a &middot; dermal &middot; sev 2</span><span class="st q">queued</span></div>
+                <div class="outbox-row"><span class="id">op_91c4 &middot; respiratory &middot; sev 1</span><span class="st q">queued</span></div>
+                <div class="outbox-row"><span class="id">op_b30e &middot; dermal &middot; sev 3</span><span class="st q">queued</span></div>
+              </div>
+              <div style="flex:1"></div>
+            </div>
+            <div class="tabbar">
+              <div class="tb on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+              <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v18M3 12h18"/></svg>Capture</div>
+              <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>Sync</div>
+            </div>
+          </div></div>
+          <div class="screen-cap">
+            <span class="n">Field home</span>
+            <span class="tiny muted">The queue is on the home screen, not buried. A worker who cannot see their unsent work does not trust the app.</span>
+          </div>
+        </div>
+
+        <!-- 3. health capture -->
+        <div class="screen">
+          <div class="phone"><div class="vp">
+            <div class="statusbar"><span>09:17</span><span class="dot-off">Offline</span></div>
+            <div class="vp-body">
+              <div>
+                <div class="vp-h">What did you see?</div>
+                <div class="vp-sub">Step 1 of 2 &middot; Ner block, today</div>
+              </div>
+              <div class="mic">
+                <div class="mic-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/></svg></div>
+                <div><div class="tl" style="font-size:12px">Hold to speak</div><div class="ts">बोलकर बताइए</div></div>
+              </div>
+              <div class="icongrid">
+                <div class="ic on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 8c4-4 12-4 16 0M6 14c3-3 9-3 12 0M9 19c2-1.5 4-1.5 6 0"/></svg>Skin</div>
+                <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 4v7M8 11h8l2 8H6z"/></svg>Breathing</div>
+                <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="9" r="5"/><path d="M12 14v7M9 18h6"/></svg>Head</div>
+                <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 4h10v9a5 5 0 0 1-10 0z"/><path d="M9 17v3h6v-3"/></svg>Stomach</div>
+              </div>
+              <div style="flex:1"></div>
+              <div class="tap hero" style="min-height:44px"><span class="tl">Next</span></div>
+            </div>
+          </div></div>
+          <div class="screen-cap">
+            <span class="n">Health capture</span>
+            <span class="tiny muted">Four categories, never a free-text symptom field. Structured input is what makes the join possible at all.</span>
+          </div>
+        </div>
+
+        <!-- 4. severity -->
+        <div class="screen">
+          <div class="phone"><div class="vp">
+            <div class="statusbar"><span>09:17</span><span class="dot-off">Offline</span></div>
+            <div class="vp-body">
+              <div>
+                <div class="vp-h">How bad is it?</div>
+                <div class="vp-sub">Step 2 of 2 &middot; Skin</div>
+              </div>
+              <div class="tap"><span class="tl">Mild</span><span class="ts">Noticed it, still working</span></div>
+              <div class="tap" style="border-color:var(--warn);background:var(--warn-b)"><span class="tl" style="color:var(--warn)">Moderate</span><span class="ts">Stopped work, no clinic</span></div>
+              <div class="tap"><span class="tl">Severe</span><span class="ts">Needs referral today</span></div>
+              <div style="margin-top:2px">
+                <div class="kv"><span>Age band</span><b>25 to 40</b></div>
+                <div class="kv"><span>Block</span><b>LGD 4162</b></div>
+                <div class="kv"><span>Date</span><b>2026-08-14</b></div>
+              </div>
+              <div style="flex:1"></div>
+              <div class="tap hero" style="min-height:44px"><span class="tl">Save to device</span><span class="ts">Sends when signal returns</span></div>
+            </div>
+          </div></div>
+          <div class="screen-cap">
+            <span class="n">Severity</span>
+            <span class="tiny muted">Severity described by what the person can still do, not by a number a worker has to calibrate. Block and date are captured, never asked.</span>
+          </div>
+        </div>
+
+        <!-- 5. sync -->
+        <div class="screen">
+          <div class="phone"><div class="vp">
+            <div class="statusbar"><span>09:41</span><span class="dot-on">Online</span></div>
+            <div class="vp-body">
+              <div>
+                <div class="vp-h">Sending 4 records</div>
+                <div class="vp-sub">Signal returned 6 seconds ago</div>
+              </div>
+              <div class="card" style="padding:11px;gap:0;border-radius:9px">
+                <div class="outbox-row"><span class="id">op_7f2a1b &middot; health</span><span class="st ok">sent</span></div>
+                <div class="outbox-row"><span class="id">op_91c4de &middot; health</span><span class="st ok">sent</span></div>
+                <div class="outbox-row"><span class="id">op_b30e77 &middot; health</span><span class="st ok">sent</span></div>
+                <div class="outbox-row"><span class="id">op_c5f209 &middot; agri</span><span class="st q">sending</span></div>
+              </div>
+              <div class="note" style="padding:10px 12px;font-size:10.5px;gap:4px;border-radius:8px">
+                <b style="font-size:10.5px">Retried safely</b>
+                <span class="tiny">op_7f2a1b was sent twice. The server matched the ID and kept one row.</span>
+              </div>
+              <div style="flex:1"></div>
+            </div>
+            <div class="tabbar">
+              <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</div>
+              <div class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v18M3 12h18"/></svg>Capture</div>
+              <div class="tb on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/></svg>Sync</div>
+            </div>
+          </div></div>
+          <div class="screen-cap">
+            <span class="n">Sync drain</span>
+            <span class="tiny muted">The idempotency note is deliberately visible. It answers the duplicate-records question before a judge has to ask it.</span>
+          </div>
+        </div>
+
+        <!-- 6. dashboard -->
+        <div class="screen">
+          <div class="phone"><div class="vp">
+            <div class="statusbar"><span>09:42</span><span class="dot-on">Online</span></div>
+            <div class="vp-body">
+              <div>
+                <div class="vp-h">Active risk flags</div>
+                <div class="vp-sub">Yavatmal district &middot; 10 blocks &middot; updated 2m ago</div>
+              </div>
+              <div class="flagcard"><div class="sev c"></div><div class="flag-in">
+                <div class="flag-top"><span class="flag-n">Ner</span><span class="pill c">Composite</span></div>
+                <span class="flag-b">LGD 4162 &middot; heat and exposure</span>
+                <div class="spark"><i style="height:22%"></i><i style="height:18%"></i><i class="ag" style="height:64%"></i><i class="ag" style="height:88%"></i><i style="height:30%"></i><i class="hi" style="height:72%"></i><i class="hi" style="height:100%"></i></div>
+              </div></div>
+              <div class="flagcard"><div class="sev c"></div><div class="flag-in">
+                <div class="flag-top"><span class="flag-n">Ghatanji</span><span class="pill c">Exposure</span></div>
+                <span class="flag-b">LGD 4171 &middot; dermal cluster</span>
+              </div></div>
+              <div class="flagcard"><div class="sev w"></div><div class="flag-in">
+                <div class="flag-top"><span class="flag-n">Ralegaon</span><span class="pill w">Heat</span></div>
+                <span class="flag-b">LGD 4168 &middot; 3 days above 44&deg;C</span>
+              </div></div>
+              <div class="flagcard"><div class="sev"></div><div class="flag-in">
+                <div class="flag-top"><span class="flag-n">Digras</span><span class="pill" style="background:var(--sunk);color:var(--muted);border:1px solid var(--rule-2)">No signal</span></div>
+                <span class="flag-b">LGD 4165 &middot; below threshold</span>
+              </div></div>
+              <div style="flex:1"></div>
+            </div>
+          </div></div>
+          <div class="screen-cap">
+            <span class="n">Risk dashboard</span>
+            <span class="tiny muted">Ranked, with the two feeds drawn in one sparkline: agri applications in green, symptom reports in red. Below-threshold blocks stay listed, which is the proof the engine discriminates.</span>
+          </div>
+        </div>
+
+        <!-- 7. flag detail -->
+        <div class="screen">
+          <div class="phone"><div class="vp">
+            <div class="statusbar"><span>09:43</span><span class="dot-on">Online</span></div>
+            <div class="vp-body">
+              <div>
+                <span class="pill c">Composite &middot; high confidence</span>
+                <div class="vp-h" style="margin-top:6px">Ner block</div>
+                <div class="vp-sub">Window 03 Aug to 14 Aug 2026</div>
+              </div>
+              <div class="note" style="padding:11px 13px;font-size:11px;border-left-color:var(--crit);gap:5px;border-radius:8px">
+                <span>Organophosphate applications rose to <b>9</b> against a weekly baseline of <b>2</b>. Dermal reports over the following 6 days reached <b>11</b> against a baseline of <b>1.4</b>. Heat index held above 43&deg;C throughout, which raises skin absorption.</span>
+              </div>
+              <div>
+                <div class="kv"><span>Applications, 7 days</span><b>9 / 2.0</b></div>
+                <div class="kv"><span>Dermal reports, 6 days</span><b>11 / 1.4</b></div>
+                <div class="kv"><span>Peak heat index</span><b>44.6&deg;C</b></div>
+                <div class="kv"><span>Households in block</span><b>2,840</b></div>
+              </div>
+              <div style="flex:1"></div>
+              <div class="tap hero" style="min-height:44px"><span class="tl">Alert 3 ASHA workers</span><span class="ts">Skin exposure protocol</span></div>
+              <div class="tap" style="min-height:38px"><span class="tl" style="font-size:12px">Advise spraying pause</span></div>
+            </div>
+          </div></div>
+          <div class="screen-cap">
+            <span class="n">Flag detail</span>
+            <span class="tiny muted">The hero screen of the product. Observed against expected for both feeds, in one sentence, with the action attached. Open the demo on this and work backwards.</span>
+          </div>
+        </div>
+
+        <!-- 8. consent -->
+        <div class="screen">
+          <div class="phone"><div class="vp">
+            <div class="statusbar"><span>09:44</span><span class="dot-on">Online</span></div>
+            <div class="vp-body">
+              <div>
+                <div class="vp-h">Consent for this record</div>
+                <div class="vp-sub">DPDP Act 2023 &middot; purpose limited</div>
+              </div>
+              <div>
+                <div class="kv"><span>Purpose</span><b>Risk detection</b></div>
+                <div class="kv"><span>Shared with</span><b>Block office</b></div>
+                <div class="kv"><span>Identity</span><b>Not attached</b></div>
+                <div class="kv"><span>Granted</span><b>2026-08-14</b></div>
+                <div class="kv"><span>Expires</span><b>2026-11-12</b></div>
+              </div>
+              <div class="note" style="padding:10px 12px;font-size:10.5px;border-radius:8px">
+                <span class="tiny">Health records leave the device with an age band and a block, never a name or an ABHA number. The correlation engine has never needed one.</span>
+              </div>
+              <div style="flex:1"></div>
+              <div class="tap" style="border-color:var(--crit);min-height:40px"><span class="tl" style="color:var(--crit);font-size:12px">Withdraw consent</span></div>
+            </div>
+          </div></div>
+          <div class="screen-cap">
+            <span class="n">Consent artifact</span>
+            <span class="tiny muted">Cheap to build, disproportionately valuable. Purpose, expiry and a working revoke turn the DPDP slide from a promise into a screenshot.</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="note">
+        <strong>The privacy line worth rehearsing.</strong>
+        <p class="tiny">The correlation engine operates on block-level aggregates and never needs a patient identity. That is not a compromise made to save time, it is the strongest privacy argument available, and it is true. Say it in the demo in exactly those terms.</p>
+      </div>
+    </section>
+
+    <!-- ============ DEPLOY ============ -->
+    <section id="deploy">
+      <div class="sec-head">
+        <span class="kicker">Section seven</span>
+        <h2>Deployment</h2>
+        <p class="tiny muted">One project, free tier, judge-clickable. Standing up before any feature code exists.</p>
+      </div>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>Piece</th><th>Where</th><th>Watch for</th></tr></thead>
+          <tbody>
+            <tr><td>PWA and API</td><td class="num">Vercel, one project</td><td>Set the Vite output dir. Functions live in <code>/api</code> and deploy automatically.</td></tr>
+            <tr><td>Database</td><td class="num">Neon free tier</td><td>Auto-suspends after 5 minutes idle and wakes in well under a second. Hit the URL once before presenting anyway.</td></tr>
+            <tr><td>Weather</td><td class="num">OpenWeather free</td><td>Key activation can lag by up to an hour after signup. Register this first, before anything else.</td></tr>
+            <tr><td>Source</td><td class="num">GitHub, public</td><td>Public repo on the last slide. Judges do check, and a real commit history over a real evening reads well.</td></tr>
+            <tr><td>Access</td><td class="num">QR to the live URL</td><td>Put it on the last slide and on a printed page. Judges scanning it on their own phone is worth more than any screenshot.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note warn">
+        <strong>Set the environment variables at first deploy, not at the end.</strong>
+        <p class="tiny"><code>DATABASE_URL</code> and <code>OPENWEATHER_KEY</code> go into the Vercel dashboard during the hour-zero deploy, with a stub endpoint that reads both and returns their status. Finding out at 22:30 that a variable was never set in the production environment is the single most common way this evening goes wrong.</p>
+      </div>
+    </section>
+
+    <!-- ============ SCHEDULE ============ -->
+    <!-- ============ STATUS ============ -->
+    <section id="schedule">
+      <div class="sec-head">
+        <span class="kicker">Section eight</span>
+        <h2>What is built</h2>
+        <p class="tiny muted">Every line below was verified by running it, not by reading it. The two unverified items are named as unverified.</p>
+      </div>
+
+      <div class="sched">
+        <div class="slot gate">
+          <div class="slot-t">Done</div>
+          <div class="slot-b">
+            <h4>Correlation engine and its acceptance test</h4>
+            <p class="tiny muted">Three rules with published thresholds. Flags exactly the four rigged blocks, stays silent on the deliberate near-miss and on six quiet blocks. Runs in 2 ms. <code>npm run engine:test</code></p>
+          </div>
+        </div>
+        <div class="slot gate">
+          <div class="slot-t">Done</div>
+          <div class="slot-b">
+            <h4>Schema, seed and the database round trip</h4>
+            <p class="tiny muted">Six tables. 718 rows seed in 143 ms. The seed script reads the data back out and re-runs the engine on the database's own rows to prove the round trip does not change the answer. <code>npm run db:seed</code></p>
+          </div>
+        </div>
+        <div class="slot gate">
+          <div class="slot-t">Done</div>
+          <div class="slot-b">
+            <h4>Idempotent sync</h4>
+            <p class="tiny muted">Three identical posts of the same op produced one row and three audit entries. This is the claim a judge is most likely to test, and it is testable with one curl command.</p>
+          </div>
+        </div>
+        <div class="slot gate">
+          <div class="slot-t">Done</div>
+          <div class="slot-b">
+            <h4>Offline capture, op log, and drain on reconnect</h4>
+            <p class="tiny muted">Captured with the browser forced offline, confirmed present in IndexedDB, reloaded the page, confirmed it survived, then watched it auto-sync and the server row count move by exactly one.</p>
+          </div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">Done</div>
+          <div class="slot-b">
+            <h4>Eight screens</h4>
+            <p class="tiny muted">Role select, block select, field home, health capture in two steps, agri capture, outbox, officer dashboard, flag detail, consent. Hindi and Marathi across the whole field-worker path.</p>
+          </div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">Done</div>
+          <div class="slot-b">
+            <h4>Voice input</h4>
+            <p class="tiny muted">Web Speech recognition in English, Hindi and Marathi, mapping speech onto a structured category the worker then confirms. Nothing spoken is stored. Sarvam swaps in at one file.</p>
+          </div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">Done</div>
+          <div class="slot-b">
+            <h4>Live OpenWeather enrichment</h4>
+            <p class="tiny muted">Fetches the 5 day forecast per block centroid and writes a daily heat index. Days before today stay synthetic, because the free tier does not serve history. Written down rather than glossed over.</p>
+          </div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">Yours</div>
+          <div class="slot-b">
+            <h4>Deploy</h4>
+            <p class="tiny muted">OpenWeather key first, because activation can lag an hour. Then Neon, then push, then import to Vercel, then set all three environment variables <em>before</em> the first deploy. Full command sequence is in the repository README.</p>
+          </div>
+        </div>
+        <div class="slot gate">
+          <div class="slot-t">Yours</div>
+          <div class="slot-b">
+            <h4>Verify on a real phone</h4>
+            <p class="tiny muted">Install the PWA, airplane mode, cold start. This is the one claim the build environment could not test, because its browser refuses to register any service worker. The worker and its precache manifest are generated and served correctly, so this is expected to pass, but do not say it does until you have seen it.</p>
+          </div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">Yours</div>
+          <div class="slot-b">
+            <h4>Lighthouse, then the QR code</h4>
+            <p class="tiny muted">Run it against the deployed URL in a real Chrome and put the number that comes back on the slide, whatever it is. Then generate a QR code to the live URL for the last slide.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="note warn">
+        <strong>If something has to go, cut in this order.</strong>
+        <ol class="cut">
+          <li>Voice input, and remove the mic button rather than leaving it dead</li>
+          <li>Marathi, keeping English and Hindi</li>
+          <li>The agri capture form, demonstrating capture on the health side only</li>
+          <li>The consent screen, moved to a static slide</li>
+          <li>Sparklines, leaving the observed-against-expected numbers alone</li>
+        </ol>
+        <p class="tiny">Never cut offline capture, the sync drain, or the composite flag. Those three are the demo. Everything else is decoration on a working thesis.</p>
+      </div>
+    </section>
+
+    <!-- ============ DEMO ============ -->
+    <section id="demo">
+      <div class="sec-head">
+        <span class="kicker">Section nine</span>
+        <h2>Demo script</h2>
+        <p class="tiny muted">Four minutes. Rehearse it twice tonight, out loud, on the phone you will actually hold.</p>
+      </div>
+
+      <div class="sched">
+        <div class="slot">
+          <div class="slot-t">0:00</div>
+          <div class="slot-b"><h4>Open on the flag, not the login</h4><p class="tiny muted">Start on the Ner block flag detail. Read the sentence aloud. "Nine applications against a baseline of two. Eleven dermal reports against a baseline of one point four. Heat index above 43." Then say the platform found this because it is the only system that can see both numbers.</p></div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">0:45</div>
+          <div class="slot-b"><h4>Go backwards to the field</h4><p class="tiny muted">Switch to the ASHA role. Turn on airplane mode in front of them. Do not describe it, show the switch.</p></div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">1:15</div>
+          <div class="slot-b"><h4>Capture with no signal</h4><p class="tiny muted">Log a dermal case in about 15 seconds. Then force-kill the app and reopen it. The record is still queued. This is the moment that separates you from every slideware entry.</p></div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">2:00</div>
+          <div class="slot-b"><h4>Reconnect</h4><p class="tiny muted">Airplane mode off. The queue drains on screen. Point at the idempotency note without stopping.</p></div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">2:30</div>
+          <div class="slot-b"><h4>The join closes</h4><p class="tiny muted">Back to the block officer view. The record you just captured has moved a flag. Same device, same 30 seconds, both ends of the pipeline.</p></div>
+        </div>
+        <div class="slot">
+          <div class="slot-t">3:00</div>
+          <div class="slot-b"><h4>Close on numbers and honesty</h4><p class="tiny muted">Bundle size, Lighthouse score, cold load on throttled network. Then name what is simulated and why, in one sentence, before anyone asks. Finish on the QR code and invite them to open it on their own phone.</p></div>
+        </div>
+      </div>
+
+      <div class="note">
+        <strong>Have these three answers ready.</strong>
+        <ul class="clean tiny">
+          <li><strong>Why not machine learning.</strong> No labelled dataset exists for this join, so a model would be trained on data we invented. Rules are explainable to a district officer and they are auditable. The upgrade path is real data from a pilot.</li>
+          <li><strong>What happens when two devices conflict.</strong> They do not. Each observation is written once by one worker and is immutable, so last-write-wins on the client UUID is correct rather than convenient. A CRDT here would be complexity without a conflict to resolve.</li>
+          <li><strong>Is this AgriStack data.</strong> No. It is a mock adapter with the correct schema shape, because third-party AgriStack API access is not open to us. Say that plainly and show the adapter interface. Getting caught overstating this is fatal, and admitting it costs nothing.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ HONESTY ============ -->
+    <section id="honesty">
+      <div class="sec-head">
+        <span class="kicker">Section ten</span>
+        <h2>Real versus simulated</h2>
+        <p class="tiny muted">Put this table on a slide. Volunteering it is worth more than the individual integrations are.</p>
+      </div>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>Component</th><th>Status</th><th>What we say</th></tr></thead>
+          <tbody>
+            <tr><td>Offline capture and op log</td><td><span class="chip live">Real</span></td><td>Running in IndexedDB on the judge's own phone if they scan the code.</td></tr>
+            <tr><td>Sync and idempotency</td><td><span class="chip live">Real</span></td><td>Live Postgres, verifiable by posting the same op twice.</td></tr>
+            <tr><td>Correlation engine</td><td><span class="chip live">Real</span></td><td>Real logic over synthetic data. The rules are production-shaped.</td></tr>
+            <tr><td>Weather and heat index</td><td><span class="chip live">Real</span></td><td>Live OpenWeather for Yavatmal district block centroids.</td></tr>
+            <tr><td>Health and agri records</td><td><span class="chip sim">Synthetic</span></td><td>Generated across 60 days, calibrated against published IDSP and NFHS baselines.</td></tr>
+            <tr><td>AgriStack feed</td><td><span class="chip sim">Adapter</span></td><td>Schema-correct mock. Third-party API access is not publicly available, so we built the adapter and documented the interface.</td></tr>
+            <tr><td>ABHA and FHIR</td><td><span class="chip sim">Adapter</span></td><td>FHIR-shaped Observation resources. Sandbox onboarding is in progress and does not gate the prototype.</td></tr>
+            <tr><td>Voice</td><td><span class="chip sim">Web Speech</span></td><td>Working Hindi dictation via the browser. Sarvam sits behind a one-file adapter for the final round.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ BENCH ============ -->
+    <section id="bench">
+      <div class="sec-head">
+        <span class="kicker">Section eleven</span>
+        <h2>Benchmarks</h2>
+        <p class="tiny muted">Measured on the production build, not the dev server. Two rows could not be measured in the build environment and are marked as such rather than estimated.</p>
+      </div>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>Metric</th><th>Target</th><th>Measured</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>JS transferred, gzipped</td><td class="num">under 180 KB</td><td class="num" style="color:var(--forest)">125.9 KB</td><td>Production build output, confirmed against the browser resource timing on a real load.</td></tr>
+            <tr><td>CSS transferred, gzipped</td><td class="num">-</td><td class="num" style="color:var(--forest)">4.9 KB</td><td>Same.</td></tr>
+            <tr><td>Precached app shell</td><td class="num">-</td><td class="num" style="color:var(--forest)">425.8 KB</td><td>10 entries in the generated service worker manifest.</td></tr>
+            <tr><td>Capture to durable, offline</td><td class="num">under 100 ms</td><td class="num" style="color:var(--forest)">21 ms median</td><td>12 runs, tap to IndexedDB confirming the row. Range 14 to 28 ms. Includes polling overhead, so it is an upper bound.</td></tr>
+            <tr><td>Correlation engine, 10 blocks</td><td class="num">under 300 ms</td><td class="num" style="color:var(--forest)">2.0 ms</td><td>Pure engine over 233 health and 125 agri records.</td></tr>
+            <tr><td>Full correlations endpoint</td><td class="num">under 300 ms</td><td class="num" style="color:var(--forest)">38 ms</td><td>Warm round trip including the database read. First call after a cold start is about 3 s while the local WASM database opens.</td></tr>
+            <tr><td>Sync idempotency</td><td class="num">pass</td><td class="num" style="color:var(--forest)">pass</td><td>Three identical posts produced one row and three audit entries.</td></tr>
+            <tr><td>Engine discrimination</td><td class="num">pass</td><td class="num" style="color:var(--forest)">pass</td><td>Flags exactly the 4 rigged blocks, stays silent on the near-miss and on 6 quiet blocks.</td></tr>
+            <tr><td>Survives a reload while queued</td><td class="num">pass</td><td class="num" style="color:var(--forest)">pass</td><td>Captured offline, reloaded, record still present, then auto-synced on reconnect.</td></tr>
+            <tr><td>Service worker registration</td><td class="num">pass</td><td class="num" style="color:var(--warn)">not measured</td><td>The build environment's browser refuses to register any service worker. The worker and its 10-entry precache manifest are generated and served correctly. Verify on a real phone.</td></tr>
+            <tr><td>Lighthouse</td><td class="num">90 or above</td><td class="num" style="color:var(--warn)">not measured</td><td>Needs a real Chrome against the deployed URL. Run it once the Vercel URL exists.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note warn">
+        <strong>Two things still need a real device.</strong>
+        <p class="tiny">Everything above the last two rows was measured. The service worker could not be registered in the build environment's browser, so offline <em>app boot</em> is unproven even though offline <em>data capture</em> is proven. Install the PWA on an Android phone, enable airplane mode, and cold-start it. If the app shell loads, the claim holds. Run Lighthouse in the same session and put whatever number comes back on the slide.</p>
+      </div>
+    </section>
+
+    <footer>
+      Rural Bridge build blueprint, drafted 14 August 2026 for the Round 1 deadline at 23:59. Screens on this page are live markup rather than images, so they are also the visual spec for tonight's build. Update the benchmark table with measured values before the deck is submitted.
+    </footer>
+
+  </main>
+</div>

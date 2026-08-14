@@ -1,0 +1,148 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   Palette is forest / bone / amber. Deliberately not the default AI blue or
+   violet, and deliberately not a beige-and-terracotta "warm craft" scheme.
+   One brand accent (forest) carries every interactive surface. Amber and red
+   are semantic only: they mean a severity band, never decoration.
+
+   Radius is locked to three values and nothing else uses a different one:
+     --r-card   12px   cards, panels, primary buttons
+     --r-chip    8px   inputs, small controls
+     pill              status pills only
+--------------------------------------------------------------------------- */
+
+:root {
+  --ground:   #F6F8F3;
+  --surface:  #FFFFFF;
+  --sunk:     #EEF2E9;
+  --ink:      #131711;
+  --ink-2:    #3B4434;
+  --muted:    #5C6355;
+  --rule:     #DCE2D5;
+  --rule-2:   #C6CFBD;
+
+  --forest:    #2F5D3F;
+  --forest-2:  #264C34;
+  --forest-b:  #E4EEE5;
+  --on-forest: #FFFFFF;
+
+  --warn:     #9A5A0B;
+  --warn-b:   #FBEEDC;
+  --crit:     #A3291C;
+  --crit-b:   #FBE6E2;
+
+  --r-card: 12px;
+  --r-chip: 8px;
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:   #0F120E;
+    --surface:  #161A14;
+    --sunk:     #1C211A;
+    --ink:      #E7EBE2;
+    --ink-2:    #B9C2B2;
+    --muted:    #8D9587;
+    --rule:     #272D24;
+    --rule-2:   #38402F;
+
+    --forest:    #7FBA8E;
+    --forest-2:  #98CCA5;
+    --forest-b:  #1B2A1E;
+    --on-forest: #0F120E;
+
+    --warn:     #D9A253;
+    --warn-b:   #2B2213;
+    --crit:     #E28273;
+    --crit-b:   #2E1A16;
+
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-ground: var(--ground);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-rule: var(--rule);
+  --color-rule-2: var(--rule-2);
+  --color-forest: var(--forest);
+  --color-forest-2: var(--forest-2);
+  --color-forest-b: var(--forest-b);
+  --color-on-forest: var(--on-forest);
+  --color-warn: var(--warn);
+  --color-warn-b: var(--warn-b);
+  --color-crit: var(--crit);
+  --color-crit-b: var(--crit-b);
+
+  --radius-card: var(--r-card);
+  --radius-chip: var(--r-chip);
+
+  --font-sans: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system,
+    "Noto Sans", "Noto Sans Devanagari", sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+/* Field workers operate this outdoors, often one-handed. Every interactive
+   element clears 48px, and primary actions clear 56px. */
+button, a[role="button"] { min-height: 48px; touch-action: manipulation; }
+
+:focus-visible {
+  outline: 3px solid var(--forest);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Tactile press. Kept at the same scale everywhere so the whole app feels like
+   one surface rather than a set of differently-sprung controls. */
+.press { transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), background-color 120ms; }
+.press:active { transform: scale(0.975); }
+
+.tabular { font-variant-numeric: tabular-nums; }
+
+@keyframes rb-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.pulse { animation: rb-pulse 1.6s ease-in-out infinite; }
+
+@keyframes rb-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* Entry motion only, and only on lists that actually change. It signals that
+   new items arrived, which is the one thing worth animating in a queue. */
+.rise { animation: rb-rise 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
