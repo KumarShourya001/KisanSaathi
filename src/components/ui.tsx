@@ -45,7 +45,7 @@ export function useClock(): string {
 
 export function Screen({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-full min-h-[100dvh] flex-col bg-ground text-ink">
+    <div className="flex h-full flex-col bg-ground text-ink">
       {children}
     </div>
   );

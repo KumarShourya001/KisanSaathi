@@ -91,7 +91,7 @@ export default function App() {
   const showTabs = !isOfficer && !["capture", "saved"].includes(parts[0] ?? "");
 
   return (
-    <div className="flex h-full min-h-[100dvh] flex-col">
+    <div className="flex h-[100dvh] flex-col">
       <div className="flex-1 overflow-hidden">{screen}</div>
 
       {toast && (
