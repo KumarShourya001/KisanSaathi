@@ -154,7 +154,13 @@ None of that changes the schema or the rules.
   is a schema-correct adapter rather than a live integration.
 - ABHA and FHIR are shaped correctly but not connected. Sandbox onboarding does
   not gate the prototype.
-- Sarvam AI: Live integration via `api/transcribe.ts` for multilingual speech-to-text; the API key is kept server-side.
+- Sarvam AI speech-to-text is implemented in `api/transcribe.ts`, with the key
+  held server-side so it never reaches the phone. It is **not verified**: there
+  is no key to test against yet. With `SARVAM_API_KEY` unset the client probes
+  `/api/transcribe`, gets `configured: false`, and silently uses the browser's
+  Web Speech API instead. That fallback is the path that has been tested end to
+  end. Do not claim Sarvam is running until a key exists and a real clip has
+  come back transcribed.
 - Open-Meteo is free for non-commercial use and needs no API key. A commercial
   deployment needs their paid tier.
 - Live weather is read-only by default. Persisting it replaces the seeded demo

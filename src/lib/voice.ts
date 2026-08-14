@@ -105,6 +105,109 @@ export const webSpeech: Recogniser = {
 };
 
 /**
+ * Sarvam recogniser, via our own server so the API key never reaches the phone.
+ *
+ * Records a short clip with MediaRecorder, POSTs it to /api/transcribe, and
+ * returns the transcript through the same Recogniser interface the Web Speech
+ * path uses, so VoiceButton does not care which one it got.
+ *
+ * `supported` is false until a probe confirms the server actually has a key
+ * configured. That default matters: with no key the app silently keeps using
+ * Web Speech, which is the path that is known to work. Sarvam is better at
+ * code-mixed Hindi and Marathi, so it wins when it is available.
+ */
+
+let sarvamReady = false;
+
+/** Probe once at startup. Failure is not an error; it just means Web Speech. */
+export async function probeSarvam(): Promise<boolean> {
+  try {
+    const res = await fetch("/api/transcribe", { method: "GET" });
+    if (!res.ok) return false;
+    const body = (await res.json()) as { configured?: boolean };
+    sarvamReady = Boolean(body.configured);
+  } catch {
+    sarvamReady = false;
+  }
+  return sarvamReady;
+}
+
+export const sarvamSpeech: Recogniser = {
+  get supported() {
+    return (
+      sarvamReady &&
+      typeof navigator !== "undefined" &&
+      Boolean(navigator.mediaDevices?.getUserMedia) &&
+      typeof MediaRecorder !== "undefined"
+    );
+  },
+
+  listen(locale, { onResult, onError, onEnd }) {
+    let recorder: MediaRecorder | null = null;
+    let stream: MediaStream | null = null;
+    let cancelled = false;
+
+    const stopTracks = () => stream?.getTracks().forEach((t) => t.stop());
+
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((s) => {
+        if (cancelled) {
+          s.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        stream = s;
+        const chunks: BlobPart[] = [];
+        recorder = new MediaRecorder(s);
+
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) chunks.push(e.data);
+        };
+
+        recorder.onstop = async () => {
+          stopTracks();
+          if (cancelled || chunks.length === 0) {
+            onEnd();
+            return;
+          }
+          try {
+            const form = new FormData();
+            form.append("audio", new Blob(chunks, { type: "audio/webm" }), "clip.webm");
+            form.append("language", locale);
+            const res = await fetch("/api/transcribe", { method: "POST", body: form });
+            if (!res.ok) throw new Error(`transcribe ${res.status}`);
+            const body = (await res.json()) as { transcript?: string };
+            const text = (body.transcript ?? "").trim();
+            if (text) onResult(text, true);
+            else onError("Nothing was heard. Try again.");
+          } catch (err) {
+            onError(err instanceof Error ? err.message : "Transcription failed.");
+          } finally {
+            onEnd();
+          }
+        };
+
+        recorder.start();
+        // Field entries are a word or two. Cap the clip so a forgotten tap
+        // does not upload a minute of audio over a metered connection.
+        window.setTimeout(() => {
+          if (recorder && recorder.state === "recording") recorder.stop();
+        }, 6000);
+      })
+      .catch(() => {
+        onError("Microphone permission was refused.");
+        onEnd();
+      });
+
+    return () => {
+      cancelled = true;
+      if (recorder && recorder.state === "recording") recorder.stop();
+      else stopTracks();
+    };
+  },
+};
+
+/**
  * Read-aloud, the other half of a voice-first interface.
  *
  * Speech recognition lets a worker who cannot type still enter data. Speech

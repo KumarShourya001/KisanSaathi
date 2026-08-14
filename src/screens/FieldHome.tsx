@@ -61,8 +61,8 @@ export function FieldHome({
           )}
         </div>
 
-        <div className="flex-1" />
-
+        {/* No spacer. Pushing this to the bottom of a mostly empty screen
+            left a large void and put the control against the tab bar. */}
         <button
           onClick={() => navigate("/consent")}
           className="press flex min-h-[46px] items-center justify-center gap-2 rounded-chip border border-rule bg-surface text-[13px] font-medium text-ink-2"

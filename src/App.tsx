@@ -4,6 +4,7 @@ import { useRoute, segments } from "./lib/router";
 import { loadSession, saveSession, clearSession, type Lang, type Session } from "./lib/session";
 import { translator } from "./lib/i18n";
 import { startAutoSync, type DrainOutcome } from "./lib/sync";
+import { probeSarvam } from "./lib/voice";
 import { usePending } from "./components/ui";
 import { RoleSelect } from "./screens/RoleSelect";
 import { FieldHome } from "./screens/FieldHome";
@@ -33,6 +34,12 @@ export default function App() {
       setToast(parts.join(", "));
       window.setTimeout(() => setToast(null), 4000);
     });
+  }, []);
+
+  // Ask once whether the deployment has a Sarvam key. Until this answers,
+  // and forever if it answers no, voice uses the browser's own recogniser.
+  useEffect(() => {
+    void probeSarvam();
   }, []);
 
   const update = (patch: Partial<Session>) => setSession(saveSession(patch));
@@ -91,8 +98,10 @@ export default function App() {
   const showTabs = !isOfficer && !["capture", "saved"].includes(parts[0] ?? "");
 
   return (
-    <div className="flex h-[100dvh] flex-col">
-      <div className="flex-1 overflow-hidden">{screen}</div>
+    // min-h-0 on the content row is what lets the inner scroller actually
+    // scroll instead of growing and pushing the tab bar off screen.
+    <div className="flex h-[100dvh] flex-col bg-ground">
+      <div className="min-h-0 flex-1 overflow-hidden">{screen}</div>
 
       {toast && (
         <div

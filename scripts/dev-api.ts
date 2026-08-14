@@ -20,6 +20,7 @@ const ROUTES: Record<string, () => Promise<{ default: Handler }>> = {
   "/api/sync": () => import("../api/sync.js"),
   "/api/seed": () => import("../api/seed.js"),
   "/api/weather": () => import("../api/weather.js"),
+  "/api/transcribe": () => import("../api/transcribe.js"),
 };
 
 function readBody(req: IncomingMessage): Promise<string> {

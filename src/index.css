@@ -40,30 +40,19 @@
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ground:   #0F120E;
-    --surface:  #161A14;
-    --sunk:     #1C211A;
-    --ink:      #E7EBE2;
-    --ink-2:    #B9C2B2;
-    --muted:    #8D9587;
-    --rule:     #272D24;
-    --rule-2:   #38402F;
+/* ---------------------------------------------------------------------------
+   Light only, deliberately.
 
-    --forest:    #7FBA8E;
-    --forest-2:  #98CCA5;
-    --forest-b:  #1B2A1E;
-    --on-forest: #0F120E;
+   This is a phone held outdoors in direct sun by a health worker walking
+   between houses. A dark interface is the wrong tool for that: it lowers
+   apparent contrast in bright ambient light exactly when legibility matters
+   most, and the officer console is read in the same session on the same
+   device.
 
-    --warn:     #D9A253;
-    --warn-b:   #2B2213;
-    --crit:     #E28273;
-    --crit-b:   #2E1A16;
-
-    color-scheme: dark;
-  }
-}
+   `color-scheme: light` above also tells the browser to keep form controls,
+   scrollbars and the address bar light, so a phone set to system dark mode
+   still renders this app as designed rather than half-inverting it.
+--------------------------------------------------------------------------- */
 
 @theme inline {
   --color-ground: var(--ground);
