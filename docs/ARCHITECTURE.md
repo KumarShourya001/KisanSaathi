@@ -31,7 +31,7 @@ explainable advisory that neither feed could have produced alone.
                            v
               Postgres:  health_records
                          agri_records
-                         weather_cache  <-- OpenWeather
+                         weather_cache  <-- Open-Meteo
                            |
                            v
               Correlation engine (pure TS)
@@ -154,8 +154,11 @@ None of that changes the schema or the rules.
   is a schema-correct adapter rather than a live integration.
 - ABHA and FHIR are shaped correctly but not connected. Sandbox onboarding does
   not gate the prototype.
-- OpenWeather's free tier serves current conditions and a five-day forecast, not
-  history. Days before today come from the synthetic seed.
+- Open-Meteo is free for non-commercial use and needs no API key. A commercial
+  deployment needs their paid tier.
+- Live weather is read-only by default. Persisting it replaces the seeded demo
+  scenario, and real heat in this district peaks outside the engine's
+  evaluation window for an August date, so writing is behind an explicit flag.
 - Advisory dispatch records intent locally and contacts nobody.
 - Block codes are shaped like LGD codes but are demo values, not verified real
   codes for these blocks.

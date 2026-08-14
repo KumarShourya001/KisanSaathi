@@ -70,10 +70,28 @@ export function Dashboard({ navigate }: { navigate: (to: string) => void }) {
     void load();
   }, []);
 
-  // A record that synced seconds ago should move a flag without a reload.
+  /**
+   * A record that synced seconds ago should move a flag without a reload, but
+   * a fixed 15 second poll is hostile on a metered 2G connection: it spends the
+   * user's data on a screen that has probably not changed. Back the interval
+   * off according to what the connection reports, and stop entirely offline.
+   */
   useEffect(() => {
     if (!online) return;
-    const id = window.setInterval(() => void load(), 15000);
+    const conn = (navigator as Navigator & {
+      connection?: { effectiveType?: string; saveData?: boolean };
+    }).connection;
+
+    const effective = conn?.effectiveType ?? "4g";
+    const interval = conn?.saveData
+      ? 120_000
+      : effective === "slow-2g" || effective === "2g"
+        ? 90_000
+        : effective === "3g"
+          ? 45_000
+          : 15_000;
+
+    const id = window.setInterval(() => void load(), interval);
     return () => window.clearInterval(id);
   }, [online]);
 

@@ -105,6 +105,52 @@ export const webSpeech: Recogniser = {
 };
 
 /**
+ * Read-aloud, the other half of a voice-first interface.
+ *
+ * Speech recognition lets a worker who cannot type still enter data. Speech
+ * synthesis lets a worker who cannot read still understand what is being
+ * asked. A low-literacy interface needs both directions, and only having the
+ * input half is a common and serious omission.
+ *
+ * SpeechSynthesis ships in the browser, costs nothing, needs no key, and on
+ * Android it works with no network once the language pack is present. Voices
+ * for hi-IN and mr-IN are not guaranteed on every device, so `voiceFor` falls
+ * back rather than failing silently.
+ */
+export const readAloud = {
+  get supported(): boolean {
+    return typeof window !== "undefined" && "speechSynthesis" in window;
+  },
+
+  voiceFor(locale: string): SpeechSynthesisVoice | null {
+    if (!this.supported) return null;
+    const voices = window.speechSynthesis.getVoices();
+    return (
+      voices.find((v) => v.lang === locale) ??
+      voices.find((v) => v.lang.startsWith(locale.split("-")[0])) ??
+      null
+    );
+  },
+
+  speak(text: string, locale: string): void {
+    if (!this.supported || !text) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = locale;
+    const voice = this.voiceFor(locale);
+    if (voice) utterance.voice = voice;
+    // Slower than default: these are instructions, not prose, and the
+    // listener may be hearing the app for the first time.
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+  },
+
+  stop(): void {
+    if (this.supported) window.speechSynthesis.cancel();
+  },
+};
+
+/**
  * Maps a spoken phrase onto one of the four structured categories.
  *
  * Free text is never stored. The transcript only selects a category, and the

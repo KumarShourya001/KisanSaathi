@@ -496,7 +496,7 @@
           <div class="flow-stage">Enrich</div>
           <div class="flow-body">
             <div class="node">
-              <div class="node-t">Weather <span class="chip live">OpenWeather, live</span></div>
+              <div class="node-t">Weather <span class="chip live">Open-Meteo, live, no key</span></div>
               <p class="tiny muted">Temperature and humidity per block centroid, converted to a heat index. Cached server-side so the free tier quota is never the bottleneck during a demo.</p>
             </div>
           </div>
@@ -594,7 +594,7 @@
             <tr>
               <td class="num">weather_cache</td>
               <td class="num">block_id, for_date, temp_c, humidity_pct, heat_index_c</td>
-              <td>Written by the enrich step. Keeps the OpenWeather quota out of the request path.</td>
+              <td>Written by the enrich step. Keeps the weather API out of the request path.</td>
             </tr>
             <tr>
               <td class="num">consents</td>
@@ -629,7 +629,7 @@
 
         <div class="card">
           <div class="node-t">Rule 2 <span class="chip">heat stress</span></div>
-          <p class="tiny muted">Heat index computed from OpenWeather temperature and humidity at the block centroid. Two or more consecutive days at or above 40&deg;C raises a labour advisory.</p>
+          <p class="tiny muted">Heat index computed from live Open-Meteo temperature and humidity at the block centroid. Two or more consecutive days at or above 40&deg;C raises a labour advisory.</p>
           <p class="tiny muted">Bands: 40 to 45 caution, 45 to 52 danger, above 52 extreme. Action is a field-hours shift out of the 11:00 to 16:00 window plus an ORS distribution prompt to ASHA workers in that block.</p>
         </div>
 
@@ -925,7 +925,7 @@
           <tbody>
             <tr><td>PWA and API</td><td class="num">Vercel, one project</td><td>Set the Vite output dir. Functions live in <code>/api</code> and deploy automatically.</td></tr>
             <tr><td>Database</td><td class="num">Neon free tier</td><td>Auto-suspends after 5 minutes idle and wakes in well under a second. Hit the URL once before presenting anyway.</td></tr>
-            <tr><td>Weather</td><td class="num">OpenWeather free</td><td>Key activation can lag by up to an hour after signup. Register this first, before anything else.</td></tr>
+            <tr><td>Weather</td><td class="num">Open-Meteo</td><td>No account, no key, no card. Free for non-commercial use. Nothing to configure and nothing to wait for.</td></tr>
             <tr><td>Source</td><td class="num">GitHub, public</td><td>Public repo on the last slide. Judges do check, and a real commit history over a real evening reads well.</td></tr>
             <tr><td>Access</td><td class="num">QR to the live URL</td><td>Put it on the last slide and on a printed page. Judges scanning it on their own phone is worth more than any screenshot.</td></tr>
           </tbody>
@@ -934,7 +934,7 @@
 
       <div class="note warn">
         <strong>Set the environment variables at first deploy, not at the end.</strong>
-        <p class="tiny"><code>DATABASE_URL</code> and <code>OPENWEATHER_KEY</code> go into the Vercel dashboard during the hour-zero deploy, with a stub endpoint that reads both and returns their status. Finding out at 22:30 that a variable was never set in the production environment is the single most common way this evening goes wrong.</p>
+        <p class="tiny"><code>DATABASE_URL</code> and <code>SEED_TOKEN</code> go into the Vercel dashboard during the hour-zero deploy, with a stub endpoint that reads both and returns their status. Weather needs no key at all. Finding out at 22:30 that a variable was never set in the production environment is the single most common way this evening goes wrong.</p>
       </div>
     </section>
 
@@ -986,22 +986,22 @@
         <div class="slot">
           <div class="slot-t">Done</div>
           <div class="slot-b">
-            <h4>Voice input</h4>
-            <p class="tiny muted">Web Speech recognition in English, Hindi and Marathi, mapping speech onto a structured category the worker then confirms. Nothing spoken is stored. Sarvam swaps in at one file.</p>
+            <h4>Voice in both directions</h4>
+            <p class="tiny muted">Speech recognition in English, Hindi and Marathi maps speech onto a structured category the worker confirms. Read-aloud speaks the question back, because recognition alone helps someone who cannot type and does nothing for someone who cannot read. Severity and input hazard are drawn as filled scales, legible without reading at all. Nothing spoken is stored. Sarvam swaps in at one file.</p>
           </div>
         </div>
         <div class="slot">
           <div class="slot-t">Done</div>
           <div class="slot-b">
-            <h4>Live OpenWeather enrichment</h4>
-            <p class="tiny muted">Fetches the 5 day forecast per block centroid and writes a daily heat index. Days before today stay synthetic, because the free tier does not serve history. Written down rather than glossed over.</p>
+            <h4>Live Open-Meteo enrichment</h4>
+            <p class="tiny muted">Real weather per block centroid, 60 past days plus a 7 day forecast, with no API key of any kind. Read-only by default: persisting it would replace the seeded scenario, and real heat here peaks outside the evaluation window, so writing sits behind an explicit flag.</p>
           </div>
         </div>
         <div class="slot">
           <div class="slot-t">Yours</div>
           <div class="slot-b">
             <h4>Deploy</h4>
-            <p class="tiny muted">OpenWeather key first, because activation can lag an hour. Then Neon, then push, then import to Vercel, then set all three environment variables <em>before</em> the first deploy. Full command sequence is in the repository README.</p>
+            <p class="tiny muted">Neon, then push, then import to Vercel, then set both environment variables <em>before</em> the first deploy. There is no weather key to wait on. Full command sequence is in the repository README.</p>
           </div>
         </div>
         <div class="slot gate">
@@ -1093,7 +1093,7 @@
             <tr><td>Offline capture and op log</td><td><span class="chip live">Real</span></td><td>Running in IndexedDB on the judge's own phone if they scan the code.</td></tr>
             <tr><td>Sync and idempotency</td><td><span class="chip live">Real</span></td><td>Live Postgres, verifiable by posting the same op twice.</td></tr>
             <tr><td>Correlation engine</td><td><span class="chip live">Real</span></td><td>Real logic over synthetic data. The rules are production-shaped.</td></tr>
-            <tr><td>Weather and heat index</td><td><span class="chip live">Real</span></td><td>Live OpenWeather for Yavatmal district block centroids.</td></tr>
+            <tr><td>Weather and heat index</td><td><span class="chip live">Real</span></td><td>Live Open-Meteo for Yavatmal block centroids, 60 past days plus 7 forecast, no key required.</td></tr>
             <tr><td>Health and agri records</td><td><span class="chip sim">Synthetic</span></td><td>Generated across 60 days, calibrated against published IDSP and NFHS baselines.</td></tr>
             <tr><td>AgriStack feed</td><td><span class="chip sim">Adapter</span></td><td>Schema-correct mock. Third-party API access is not publicly available, so we built the adapter and documented the interface.</td></tr>
             <tr><td>ABHA and FHIR</td><td><span class="chip sim">Adapter</span></td><td>FHIR-shaped Observation resources. Sandbox onboarding is in progress and does not gate the prototype.</td></tr>
@@ -1115,8 +1115,8 @@
         <table>
           <thead><tr><th>Metric</th><th>Target</th><th>Measured</th><th>How</th></tr></thead>
           <tbody>
-            <tr><td>JS transferred, gzipped</td><td class="num">under 180 KB</td><td class="num" style="color:var(--forest)">125.9 KB</td><td>Production build output, confirmed against the browser resource timing on a real load.</td></tr>
-            <tr><td>CSS transferred, gzipped</td><td class="num">-</td><td class="num" style="color:var(--forest)">4.9 KB</td><td>Same.</td></tr>
+            <tr><td>JS transferred, gzipped</td><td class="num">under 180 KB</td><td class="num" style="color:var(--forest)">129.6 KB</td><td>Production build output, confirmed against the browser resource timing on a real load.</td></tr>
+            <tr><td>CSS transferred, gzipped</td><td class="num">-</td><td class="num" style="color:var(--forest)">5.1 KB</td><td>Same.</td></tr>
             <tr><td>Precached app shell</td><td class="num">-</td><td class="num" style="color:var(--forest)">425.8 KB</td><td>10 entries in the generated service worker manifest.</td></tr>
             <tr><td>Capture to durable, offline</td><td class="num">under 100 ms</td><td class="num" style="color:var(--forest)">21 ms median</td><td>12 runs, tap to IndexedDB confirming the row. Range 14 to 28 ms. Includes polling overhead, so it is an upper bound.</td></tr>
             <tr><td>Correlation engine, 10 blocks</td><td class="num">under 300 ms</td><td class="num" style="color:var(--forest)">2.0 ms</td><td>Pure engine over 233 health and 125 agri records.</td></tr>

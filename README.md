@@ -11,19 +11,31 @@ raise the flag alone. That join is the product.
 Demo geography is Yavatmal district, Maharashtra, the site of a widely reported
 2017 organophosphate poisoning cluster among cotton farmers.
 
+## Documentation
+
+| Document | For |
+|---|---|
+| [docs/blueprint.html](docs/blueprint.html) | Visual overview: pipeline, eight screens, measured benchmarks |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Data flow, design decisions and their trade-offs, scaling notes |
+| [docs/PRIVACY.md](docs/PRIVACY.md) | DPDP Act 2023 mapping, what is collected, and the gaps we have not closed |
+| [docs/API.md](docs/API.md) | All six endpoints with request and response examples |
+| [docs/BUSINESS.md](docs/BUSINESS.md) | Who pays, revenue model, measured unit economics, beachhead market, risks |
+| [docs/DEMO.md](docs/DEMO.md) | Four-minute demo script, the three questions you will get, failure recovery |
+| [docs/DECK.md](docs/DECK.md) | Slide-by-slide outline for the pitch deck |
+
 ---
 
 ## Deploy it (about 15 minutes)
 
-You need free accounts on Neon, OpenWeather and Vercel.
+You need free accounts on Neon and Vercel. That is all.
 
-### 1. OpenWeather first
+**There is no weather API key.** Weather comes from
+[Open-Meteo](https://open-meteo.com), which needs no account, no key and no
+card, and unlike OpenWeather's free tier it serves historical data as well as
+forecast. Free for non-commercial use; a commercial deployment needs their paid
+tier.
 
-Register at <https://openweathermap.org/api> and copy the API key. **Do this
-before anything else**: a new key can take up to an hour to activate, and it is
-the only step with a clock on it.
-
-### 2. Neon Postgres
+### 1. Neon Postgres
 
 Create a project at <https://neon.tech>. From the dashboard copy the **pooled**
 connection string. It looks like:
@@ -32,26 +44,25 @@ connection string. It looks like:
 postgresql://user:password@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require
 ```
 
-### 3. Push and import
+### 2. Push and import
 
 Create the GitHub repo, push this tree, then import it at
 <https://vercel.com/new>. Vercel detects Vite on its own; leave the build
 settings alone.
 
-### 4. Set the environment variables before the first deploy
+### 3. Set the environment variables before the first deploy
 
-In the Vercel project, under Settings then Environment Variables, add all three
-to **Production, Preview and Development**:
+In the Vercel project, under Settings then Environment Variables, add both to
+**Production, Preview and Development**:
 
 | Name | Value |
 |---|---|
-| `DATABASE_URL` | the pooled Neon string from step 2 |
-| `OPENWEATHER_KEY` | the key from step 1 |
+| `DATABASE_URL` | the pooled Neon string from step 1 |
 | `SEED_TOKEN` | any long random string you invent |
 
 Then deploy.
 
-### 5. Check the deploy before writing anything to it
+### 4. Check the deploy before writing anything to it
 
 ```bash
 curl https://YOUR-APP.vercel.app/api/status
@@ -61,25 +72,32 @@ Expect `"ok": true` and `"driver": "neon"`. If a variable is missing this tells
 you exactly which one, without printing its value. Fix and redeploy before
 continuing.
 
-### 6. Seed the database, once
+### 5. Seed the database, once
 
 ```bash
 curl -X POST https://YOUR-APP.vercel.app/api/seed -H "x-seed-token: YOUR_SEED_TOKEN"
 ```
 
-Expect roughly 10 blocks, 233 health records, 125 agri records and 350 weather
-rows. This deletes everything first, so do not run it during a demo.
+Expect 10 blocks, 233 health records, 125 agri records and 350 weather rows.
+This deletes everything first, so do not run it during a demo.
 
-### 7. Pull live weather
+### 6. Check live weather
 
 ```bash
 curl https://YOUR-APP.vercel.app/api/weather
 ```
 
-Overwrites today and the next five days per block with real OpenWeather data.
-Days before today stay synthetic: the free tier does not serve history.
+**Read-only by default.** It fetches real Open-Meteo data for every block, 60
+past days plus a 7 day forecast, and reports the real peak heat index per block
+without touching the database. That is the number to show a judge.
 
-### 8. Confirm
+Adding `?write=1` persists it, which **replaces the seeded weather and can
+change which heat and composite flags fire**, because real weather is not the
+demo scenario. Real heat in this district peaks in mid-June, outside the
+engine's 25 day evaluation window for an August date. Only write if you
+understand that, and re-run `/api/seed` to restore the scenario.
+
+### 7. Confirm
 
 ```bash
 curl https://YOUR-APP.vercel.app/api/correlations | head -40
@@ -120,6 +138,13 @@ curl -X POST "http://127.0.0.1:5174/api/seed?as_of=2026-08-14"
 
 Do this to wipe demo captures and get the seeded data back to a known state
 before rehearsing. Neon has no such restriction.
+
+**If PGlite reports `Aborted()`**, its data directory was corrupted by the
+process being killed mid-write. It is disposable:
+
+```bash
+rm -rf .pglite && npm run db:seed
+```
 
 ---
 
@@ -204,7 +229,7 @@ which one is deployed.
 | Offline capture and op log | Real, in IndexedDB on the viewer's own device |
 | Sync and idempotency | Real, against live Postgres |
 | Correlation engine | Real logic over synthetic data |
-| Weather and heat index | Real, live OpenWeather, today forward only |
+| Weather and heat index | Real, live Open-Meteo. 60 past days plus 7 forecast, no API key |
 | Health and agri records | Synthetic, generated across 60 days |
 | AgriStack feed | Schema-correct adapter. Third-party API access is not publicly available |
 | ABHA and FHIR | Adapter shape only. Sandbox onboarding does not gate the prototype |

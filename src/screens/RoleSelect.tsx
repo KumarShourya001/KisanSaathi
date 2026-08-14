@@ -111,14 +111,27 @@ export function RoleSelect({
             <p className="-mt-2 text-[13px] text-muted">
               Yavatmal district, Maharashtra
             </p>
-            {BLOCKS.map((b) => (
-              <Choice
-                key={b.block_id}
-                label={b.name}
-                sub={`${b.block_id} · ${b.households.toLocaleString("en-IN")} households`}
-                onClick={() => choose(b.block_id)}
-              />
-            ))}
+            {/* Two columns: ten blocks scan in one glance instead of two
+                screens of identical rows. */}
+            <div className="grid grid-cols-2 gap-2.5">
+              {BLOCKS.map((b) => (
+                <button
+                  key={b.block_id}
+                  onClick={() => choose(b.block_id)}
+                  className="press flex min-h-[66px] flex-col justify-center rounded-card border border-rule bg-surface px-3 py-2.5 text-left"
+                >
+                  <span className="text-[15px] font-semibold leading-tight">
+                    {b.name}
+                  </span>
+                  <span className="tabular font-mono text-[10.5px] text-muted">
+                    {b.block_id}
+                  </span>
+                  <span className="tabular text-[11px] text-muted">
+                    {b.households.toLocaleString("en-IN")} households
+                  </span>
+                </button>
+              ))}
+            </div>
           </>
         )}
       </Body>

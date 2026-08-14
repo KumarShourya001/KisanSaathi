@@ -11,9 +11,10 @@ import { countRows } from "../shared/repo.js";
 import { handle, today, type Req, type Res } from "./_lib.js";
 
 export default handle(async (_req: Req, res: Res) => {
+  // Only two variables exist. Weather comes from Open-Meteo, which needs no
+  // key, so there is no third thing to forget to set.
   const env = {
     DATABASE_URL: Boolean(process.env.DATABASE_URL),
-    OPENWEATHER_KEY: Boolean(process.env.OPENWEATHER_KEY),
     SEED_TOKEN: Boolean(process.env.SEED_TOKEN),
   };
 

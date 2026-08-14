@@ -5,6 +5,7 @@ import { clearOutbox, recentOps } from "../lib/db";
 import { drain, type DrainOutcome } from "../lib/sync";
 import type { T } from "../lib/i18n";
 import {
+  ActionBar,
   Big,
   Body,
   Card,
@@ -84,8 +85,9 @@ export function SyncScreen({
           </Note>
         )}
 
-        <div className="flex-1" />
+      </Body>
 
+      <ActionBar>
         <Big
           label={busy ? t("syncing") : t("syncNow")}
           sub={
@@ -110,7 +112,7 @@ export function SyncScreen({
             Clear this device for a fresh demo run
           </button>
         )}
-      </Body>
+      </ActionBar>
     </Screen>
   );
 }

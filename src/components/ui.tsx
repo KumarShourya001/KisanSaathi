@@ -260,6 +260,26 @@ export function IconTile({
   );
 }
 
+/**
+ * Primary action, pinned below the scrolling content rather than at the end of
+ * it.
+ *
+ * Measured problem: the agri capture form needed 204px of scrolling before Save
+ * came into view, and the outbox put Send below the fold. A worker operating
+ * one-handed outdoors should never have to scroll to find the action that
+ * finishes the task, and a form whose content grows must not be able to push
+ * its own button off screen.
+ */
+export function ActionBar({ children }: { children: ReactNode }) {
+  return (
+    <div className="shrink-0 border-t border-rule bg-surface px-4 pb-3 pt-3">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-2">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function Card({
   children,
   className = "",

@@ -21,7 +21,7 @@ curl https://YOUR-APP.vercel.app/api/status
 {
   "ok": true,
   "as_of": "2026-08-14",
-  "env": { "DATABASE_URL": true, "OPENWEATHER_KEY": true, "SEED_TOKEN": true },
+  "env": { "DATABASE_URL": true, "SEED_TOKEN": true },
   "db": {
     "driver": "neon",
     "reachable": true,
@@ -173,26 +173,52 @@ and are the only ones the exposure rule counts.
 
 ## `GET /api/weather`
 
-Fetches the OpenWeather five-day forecast per block centroid, aggregates to a
-daily maximum temperature with the humidity at that reading, computes the
-Rothfusz heat index, and upserts into `weather_cache`.
+Fetches real weather per block centroid from [Open-Meteo](https://open-meteo.com),
+aggregates hourly readings to a daily maximum temperature with the humidity at
+that same hour, and computes the Rothfusz heat index.
 
-| Query param | Meaning |
-|---|---|
-| `dry=1` | Fetch and report without writing |
+**No API key.** No account, no card, nothing to configure. One request per block
+covers 60 past days plus a 7 day forecast, which is the whole window the engine
+reads. Free for non-commercial use; a commercial deployment needs their paid tier.
+
+| Query param | Default | Meaning |
+|---|---|---|
+| `write` | off | `write=1` persists to `weather_cache`. Off by default |
+| `past_days` | 60 | How much history to pull, capped at 92 |
+
+**Read-only by default, deliberately.** A bare `GET` fetches real data and
+reports it without touching the database:
 
 ```json
 {
   "live": true,
-  "source": "OpenWeather 5 day / 3 hour forecast, free tier",
-  "history_note": "Days before today come from the synthetic seed. The free tier does not serve history.",
-  "written": [ { "block": "Ner", "days": 6 } ],
+  "source": "Open-Meteo forecast API, no key required, free for non-commercial use",
+  "persisted": false,
+  "rows_written": 0,
+  "threshold_c": 40,
+  "note": "Read-only. Real figures fetched and reported, database untouched. Add ?write=1 to persist.",
+  "blocks": [
+    {
+      "block": "Ner", "block_id": "LGD4162", "days": 67,
+      "range": ["2026-06-15", "2026-08-20"],
+      "peak_heat_index_c": 42.5, "peak_on": "2026-06-17",
+      "peak_conditions": "38.4C at 36% humidity",
+      "days_over_threshold": 3
+    }
+  ],
   "failed": []
 }
 ```
 
-Without `OPENWEATHER_KEY` set it returns `"live": false` with the reason and the
-cached row count, rather than failing.
+Those are real figures for real coordinates, which is what you show a judge.
+
+**Why writing is opt-in.** The demo scenario's heat run is synthetic and sits
+inside the engine's 25 day evaluation window. Real heat in Yavatmal peaks in
+mid-June, outside that window for an August evaluation date. Persisting live
+weather would therefore remove the composite flag, and it would do so silently.
+Showing real numbers and changing the scenario are different actions, so they
+need different requests. After `?write=1`, re-run `/api/seed` to restore the
+scenario.
 
 ---
 
